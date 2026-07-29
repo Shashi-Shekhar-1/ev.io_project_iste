@@ -39,6 +39,8 @@ const players = {};
 io.on("connection", (socket) => {
   console.log("Player Connected:", socket.id);
 
+
+
   players[socket.id] = {
   id: socket.id,
   x: 8,
@@ -49,6 +51,20 @@ io.on("connection", (socket) => {
 
 console.log(players);
 io.emit("players-update", { ...players });
+
+socket.on("player-fire", () => {
+  console.log("🔥 Player Fired:", socket.id);
+
+  socket.broadcast.emit("player-fired", {
+    id: socket.id,
+  });
+});
+
+socket.on("player-hit", (data) => {
+  console.log("🎯 Player Hit Event");
+  console.log(data);
+});
+
 socket.on("player-move", (position) => {
 
   if (!players[socket.id]) return;
