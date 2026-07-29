@@ -60,9 +60,25 @@ socket.on("player-fire", () => {
   });
 });
 
-socket.on("player-hit", (data) => {
-  console.log("🎯 Player Hit Event");
-  console.log(data);
+socket.on("player-hit", ({ playerId }) => {
+
+  console.log("🎯 Player Hit:", playerId);
+
+  if (!players[playerId]) return;
+
+  players[playerId].health -= 20;
+
+  if (players[playerId].health < 0) {
+    players[playerId].health = 0;
+  }
+
+  console.log(
+    "❤️ Health:",
+    players[playerId].health
+  );
+
+  io.emit("players-update", { ...players });
+
 });
 
 socket.on("player-move", (position) => {
