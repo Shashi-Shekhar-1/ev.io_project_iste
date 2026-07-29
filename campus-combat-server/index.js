@@ -53,6 +53,7 @@ io.on("connection", (socket) => {
   z: 8,
   rotation: 0,
   health: 100,
+  kills:0,
 };
 
 // scores[socket.id] = {
@@ -71,11 +72,14 @@ socket.on("player-fire", () => {
   });
 });
 
+
+
 socket.on("player-hit", ({ playerId }) => {
 
   console.log("🎯 Player Hit:", playerId);
 
   if (!players[playerId]) return;
+  if (!players[socket.id]) return;
 
   // Reduce Health
   players[playerId].health -= 20;
@@ -86,14 +90,41 @@ socket.on("player-hit", ({ playerId }) => {
 
     console.log("💀 Player Dead:", playerId);
 
-//     scores[socket.id].kills++;
-// scores[playerId].deaths++;
+    // ------------------------
+    // ADD KILL
+    // ------------------------
+    players[socket.id].kills++;
 
-// io.emit("score-update", scores);
+    console.log(
+      "🏆",
+      socket.id,
+      "Kills:",
+      players[socket.id].kills
+    );
 
+    // Update everyone
     io.emit("players-update", { ...players });
 
-    // Respawn after 3 seconds
+    // ------------------------
+    // GAME OVER
+    // ------------------------
+  if (players[socket.id].kills >= 3) {
+
+  console.log("📡 Sending game-over to clients");
+
+  io.emit("game-over", {
+    winner: socket.id,
+  });
+
+  console.log(
+    "🎉 WINNER:",
+    socket.id
+  );
+
+  return;
+}
+
+    // Respawn after 3 sec
     setTimeout(() => {
 
       if (!players[playerId]) return;
@@ -113,7 +144,10 @@ socket.on("player-hit", ({ playerId }) => {
     return;
   }
 
-  console.log("❤️ Health:", players[playerId].health);
+  console.log(
+    "❤️ Health:",
+    players[playerId].health
+  );
 
   io.emit("players-update", { ...players });
 
